@@ -80,7 +80,7 @@ namespace mystd
         Tuple & operator=(Tuple &&) = default;
 
         template < size_t I >
-        auto & at()
+        constexpr auto & at()
         {
             return head_.template at< I >();
         }
@@ -90,10 +90,10 @@ namespace mystd
             return sizeof...(Args);
         }
 
-        TupleView< 0, sizeof...(Args), Args... > view_full() noexcept;
+        constexpr TupleView< 0, sizeof...(Args), Args... > view_full() noexcept;
 
         template < size_t BEGIN_IDX, size_t END_IDX >
-        TupleView< BEGIN_IDX, END_IDX, Args... > view() noexcept
+        constexpr TupleView< BEGIN_IDX, END_IDX, Args... > view() noexcept
         {
             return view_full()
              .template shrink_front< BEGIN_IDX >()
@@ -111,7 +111,7 @@ namespace mystd
         template < typename T, typename... Args >
         struct TupleHead< T &, Args... >
         {
-            TupleHead(T & v, Args... args):
+            constexpr TupleHead(T & v, Args... args):
               v(v),
               next(args...)
             {}
@@ -142,7 +142,7 @@ namespace mystd
         template < typename T >
         struct TupleHead< T & >
         {
-            explicit TupleHead(T & v):
+            constexpr explicit TupleHead(T & v):
               v(v)
             {}
 
@@ -164,7 +164,7 @@ namespace mystd
         };
 
         template < size_t I = 0, typename... Args >
-        void assign_ref_tuple_impl(Tuple< Args &... > & lhs, Tuple< Args... > rhs)
+        constexpr void assign_ref_tuple_impl(Tuple< Args &... > & lhs, Tuple< Args... > rhs)
         {
             if constexpr (I < sizeof...(Args))
             {
@@ -178,7 +178,7 @@ namespace mystd
     class Tuple< Args &... >
     {
        public:
-        Tuple(Args &... args):
+        constexpr Tuple(Args &... args):
           head_(args...){};
 
         Tuple(const Tuple &) = default;
@@ -186,14 +186,14 @@ namespace mystd
         Tuple & operator=(const Tuple &) = default;
         Tuple & operator=(Tuple &&) = default;
 
-        Tuple & operator=(Tuple< Args... > & rhs)
+        constexpr Tuple & operator=(Tuple< Args... > & rhs)
         {
             detail::assign_ref_tuple_impl(*this, rhs);
             return *this;
         }
 
         template < size_t I >
-        auto & at()
+        constexpr auto & at()
         {
             return head_.template at< I >();
         }
@@ -203,10 +203,10 @@ namespace mystd
             return sizeof...(Args);
         }
 
-        TupleView< 0, sizeof...(Args), Args... > view_full() noexcept;
+        constexpr TupleView< 0, sizeof...(Args), Args... > view_full() noexcept;
 
         template < size_t BEGIN_IDX, size_t END_IDX >
-        TupleView< BEGIN_IDX, END_IDX, Args... > view() noexcept
+        constexpr TupleView< BEGIN_IDX, END_IDX, Args... > view() noexcept
         {
             return view_full()
              .template shrink_front< BEGIN_IDX >()
@@ -220,13 +220,13 @@ namespace mystd
     };
 
     template < size_t I, typename... Args >
-    auto & get(Tuple< Args... > & rhs)
+    constexpr auto & get(Tuple< Args... > & rhs)
     {
         return rhs.template at< I >();
     }
 
     template < typename... Args >
-    Tuple< Args &... > tie(Args &... args) noexcept
+    constexpr Tuple< Args &... > tie(Args &... args) noexcept
     {
         return { args... };
     }
@@ -237,7 +237,7 @@ namespace mystd
         static_assert(BEGIN != END);
 
        public:
-        TupleView(Tuple< Args... > & tuple):
+        constexpr TupleView(Tuple< Args... > & tuple):
           tuple_(tuple)
         {}
 
@@ -259,7 +259,7 @@ namespace mystd
         }
 
         template < size_t I >
-        auto & at()
+        constexpr auto & at()
         {
             static_assert(BEGIN + I < END);
             return get< BEGIN + I >(tuple_);
@@ -276,7 +276,8 @@ namespace mystd
 }
 
 template < typename... Args >
-mystd::TupleView< 0, sizeof...(Args), Args... > mystd::Tuple< Args... >::view_full() noexcept
+constexpr mystd::TupleView< 0, sizeof...(Args), Args... > mystd::Tuple<
+ Args... >::view_full() noexcept
 {
     return { *this };
 }
