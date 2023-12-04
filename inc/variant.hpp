@@ -1,5 +1,6 @@
 
 #include <cstddef>
+#include <limits>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -146,6 +147,8 @@ namespace static_containers
             return sizeof...(Args) + 1;
         }
 
+        static_assert(alternatives() < std::numeric_limits< unsigned char >::max());
+
         template < typename U >
         constexpr bool holds() const noexcept
         {
@@ -174,7 +177,7 @@ namespace static_containers
         }
 
        private:
-        size_t selected_;
+        unsigned char selected_;
         UnionT union_;
     };
 
