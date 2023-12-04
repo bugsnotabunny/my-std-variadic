@@ -1,0 +1,55 @@
+---
+BasedOnStyle: Microsoft 
+IndentWidth: 4
+---
+Language: Cpp
+DerivePointerAlignment: false
+PointerAlignment: Middle
+ColumnLimit: 100
+FixNamespaceComments: false
+NamespaceIndentation: All
+SortIncludes: false
+AlwaysBreakTemplateDeclarations: Yes
+SpacesInAngles: true
+BraceWrapping:
+    SplitEmptyFunction: false
+    SplitEmptyRecord: false
+    SplitEmptyNamespace: false
+    AfterUnion: true
+    BeforeLambdaBody: true
+    BeforeWhile: true
+SpaceBeforeCtorInitializerColon: false
+BreakConstructorInitializers: AfterColon
+AllowAllConstructorInitializersOnNextLine: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+SpaceBeforeRangeBasedForLoopColon: false
+SpaceBeforeInheritanceColon: false
+AllowShortLambdasOnASingleLine: false
+
+AlignAfterOpenBracket: DontAlign
+BinPackArguments: false
+BinPackParameters: false
+PackConstructorInitializers: Never
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 1
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+BreakStringLiterals: false
+UseCRLF: false
+PenaltyIndentedWhitespace: 1
+Cpp11BracedListStyle: false
+SpaceBeforeParens: ControlStatements
+InsertBraces: true
+IndentCaseLabels: false
+QualifierAlignment: Custom
+QualifierOrder: ['inline', 'static', 'const', 'volatile', 'type']
+
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllArgumentsOnNextLine: false
+AccessModifierOffset: -1
+EmptyLineAfterAccessModifier: Never
+EmptyLineBeforeAccessModifier: Always
