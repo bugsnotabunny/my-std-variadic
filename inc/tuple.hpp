@@ -13,7 +13,7 @@ namespace static_containers
         {
             TupleHead(T v, Args... args):
               v(std::move(v)),
-              next(args...)
+              next(std::forward< Args >(args)...)
             {}
             TupleHead(const TupleHead &) = default;
             TupleHead(TupleHead &&) = default;
@@ -72,7 +72,7 @@ namespace static_containers
     {
        public:
         Tuple(Args... args):
-          head_(args...){};
+          head_(std::forward< Args >(args)...){};
 
         Tuple(const Tuple &) = default;
         Tuple(Tuple &&) = default;
