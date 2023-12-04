@@ -24,14 +24,6 @@ add_executable(utests ${TEST_SRCS})
 target_link_libraries(utests PRIVATE Catch2::Catch2WithMain)
 target_include_directories(utests PRIVATE ${INC_DIR})
 
-
-# add_library(watcher ${LIB_SRCS})
-# target_link_libraries(watcher systemd)
-
-# add_executable(utests ${TEST_SRCS} ${EX_SRCS} ${EXT_DIR}/catch2/catch_amalgamated.cpp)
-# target_include_directories(utests PRIVATE ${INC_DIR} ${EXSRC_DIR} ${EXT_DIR}/catch2)
-# target_link_libraries(utests watcher)
-
 foreach(EX_MAIN IN LISTS EX_MAINS)
     get_filename_component(EXECUTABLE ${EX_MAIN} NAME_WE)
     add_executable(${EXECUTABLE} ${EX_MAIN} ${EX_SRCS})
