@@ -7,7 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(SRC_DIR src)
 set(INC_DIR inc)
 set(EX_DIR exp)
-set(TEST_DIR tests)`
+set(TEST_DIR tests)
 set(EXT_DIR ext)
 set(EXSRC_DIR ${EX_DIR}/${SRC_DIR})
 

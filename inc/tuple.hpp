@@ -90,7 +90,10 @@ namespace static_containers
             return sizeof...(Args);
         }
 
-        constexpr TupleView< 0, sizeof...(Args), Args... > view_full() noexcept;
+        constexpr TupleView< 0, sizeof...(Args), Args... > view_full() noexcept
+        {
+            return { *this };
+        }
 
         template < size_t BEGIN_IDX, size_t END_IDX >
         constexpr TupleView< BEGIN_IDX, END_IDX, Args... > view() noexcept
@@ -203,7 +206,10 @@ namespace static_containers
             return sizeof...(Args);
         }
 
-        constexpr TupleView< 0, sizeof...(Args), Args... > view_full() noexcept;
+        constexpr TupleView< 0, sizeof...(Args), Args... > view_full() noexcept
+        {
+            return { *this };
+        }
 
         template < size_t BEGIN_IDX, size_t END_IDX >
         constexpr TupleView< BEGIN_IDX, END_IDX, Args... > view() noexcept
@@ -273,13 +279,6 @@ namespace static_containers
        private:
         Tuple< Args... > & tuple_;
     };
-}
-
-template < typename... Args >
-constexpr static_containers::TupleView< 0, sizeof...(Args), Args... > static_containers::Tuple<
- Args... >::view_full() noexcept
-{
-    return { *this };
 }
 
 namespace static_containers
