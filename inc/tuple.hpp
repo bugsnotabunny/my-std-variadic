@@ -64,6 +64,9 @@ namespace mystd
         };
     }
 
+    template < size_t BEGIN, size_t END, typename... Args >
+    class TupleView;
+
     template < typename... Args >
     class Tuple
     {
@@ -82,9 +85,19 @@ namespace mystd
             return head_.template at< I >();
         }
 
-        constexpr size_t size() noexcept
+        static constexpr size_t size() noexcept
         {
             return sizeof...(Args);
+        }
+
+        TupleView< 0, sizeof...(Args), Args... > view_full() noexcept;
+
+        template < size_t BEGIN_IDX, size_t END_IDX >
+        TupleView< BEGIN_IDX, END_IDX, Args... > view() noexcept
+        {
+            return view_full()
+             .template shrink_front< BEGIN_IDX >()
+             .template shrink_back< size() - END_IDX >();
         }
 
         auto operator<=>(const Tuple & rhs) const noexcept = default;
@@ -185,10 +198,21 @@ namespace mystd
             return head_.template at< I >();
         }
 
-        constexpr size_t size() noexcept
+        static constexpr size_t size() noexcept
         {
             return sizeof...(Args);
         }
+
+        TupleView< 0, sizeof...(Args), Args... > view_full() noexcept;
+
+        template < size_t BEGIN_IDX, size_t END_IDX >
+        TupleView< BEGIN_IDX, END_IDX, Args... > view() noexcept
+        {
+            return view_full()
+             .template shrink_front< BEGIN_IDX >()
+             .template shrink_back< size() - END_IDX >();
+        }
+
         auto operator<=>(const Tuple & rhs) const noexcept = default;
 
        private:
@@ -207,13 +231,71 @@ namespace mystd
         return { args... };
     }
 
-    template < size_t I = 0, typename F, typename... Args >
-    void for_each(Tuple< Args... > & tuple, F f)
+    template < size_t BEGIN, size_t END, typename... Args >
+    class TupleView
     {
-        if constexpr (I < sizeof...(Args))
+        static_assert(BEGIN != END);
+
+       public:
+        TupleView(Tuple< Args... > & tuple):
+          tuple_(tuple)
+        {}
+
+        TupleView(const TupleView &) = default;
+        TupleView(TupleView &&) = default;
+        TupleView & operator=(const TupleView &) = default;
+        TupleView & operator=(TupleView &&) = default;
+
+        template < size_t N = 1 >
+        constexpr TupleView< BEGIN + N, END, Args... > shrink_front()
         {
-            f(get< I >(tuple));
-            for_each< I + 1, F, Args... >(tuple, f);
+            return { tuple_ };
+        }
+
+        template < size_t N = 1 >
+        constexpr TupleView< BEGIN, END - N, Args... > shrink_back()
+        {
+            return { tuple_ };
+        }
+
+        template < size_t I >
+        auto & at()
+        {
+            static_assert(BEGIN + I < END);
+            return get< BEGIN + I >(tuple_);
+        }
+
+        static constexpr size_t size()
+        {
+            return END - BEGIN;
+        }
+
+       private:
+        Tuple< Args... > & tuple_;
+    };
+}
+
+template < typename... Args >
+mystd::TupleView< 0, sizeof...(Args), Args... > mystd::Tuple< Args... >::view_full() noexcept
+{
+    return { *this };
+}
+
+namespace mystd
+{
+    template < size_t I, size_t BEGIN, size_t END, typename... Args >
+    auto & get(TupleView< BEGIN, END, Args... > & rhs)
+    {
+        return rhs.template at< I >();
+    }
+
+    template < size_t I = 0, typename F, size_t BEGIN, size_t END, typename... Args >
+    void for_each(TupleView< BEGIN, END, Args... > view, F f)
+    {
+        if constexpr (I < view.size())
+        {
+            f(get< I >(view));
+            for_each< I + 1, F, BEGIN, END, Args... >(view, f);
         }
     }
 }
