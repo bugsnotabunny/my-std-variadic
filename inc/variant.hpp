@@ -5,7 +5,7 @@
 #include <utility>
 #include <variant>
 
-namespace mystd
+namespace static_containers
 {
     namespace detail
     {

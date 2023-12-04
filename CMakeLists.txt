@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(my-std-variadic VERSION 0.1.0 LANGUAGES CXX)
+project(static-containers VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -7,7 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(SRC_DIR src)
 set(INC_DIR inc)
 set(EX_DIR exp)
-set(TEST_DIR tests)
+set(TEST_DIR tests)`
 set(EXT_DIR ext)
 set(EXSRC_DIR ${EX_DIR}/${SRC_DIR})
 
@@ -27,6 +27,5 @@ target_include_directories(utests PRIVATE ${INC_DIR})
 foreach(EX_MAIN IN LISTS EX_MAINS)
     get_filename_component(EXECUTABLE ${EX_MAIN} NAME_WE)
     add_executable(${EXECUTABLE} ${EX_MAIN} ${EX_SRCS})
-    # target_link_libraries(${EXECUTABLE} watcher)
     target_include_directories(${EXECUTABLE} PRIVATE ${INC_DIR} ${EXSRC_DIR})
 endforeach()

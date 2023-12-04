@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <utility>
 
-namespace mystd
+namespace static_containers
 {
     namespace detail
     {
@@ -276,13 +276,13 @@ namespace mystd
 }
 
 template < typename... Args >
-constexpr mystd::TupleView< 0, sizeof...(Args), Args... > mystd::Tuple<
+constexpr static_containers::TupleView< 0, sizeof...(Args), Args... > static_containers::Tuple<
  Args... >::view_full() noexcept
 {
     return { *this };
 }
 
-namespace mystd
+namespace static_containers
 {
     template < size_t I, size_t BEGIN, size_t END, typename... Args >
     auto & get(TupleView< BEGIN, END, Args... > & rhs)

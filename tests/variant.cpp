@@ -7,13 +7,13 @@
 
 TEST_CASE("empty default variant")
 {
-    mystd::Variant< int, bool > var;
-    REQUIRE(typeid(var.at< 0 >()) == typeid(mystd::VariantEmpty));
+    static_containers::Variant< int, bool > var;
+    REQUIRE(typeid(var.at< 0 >()) == typeid(static_containers::VariantEmpty));
 }
 
 TEST_CASE("set-get variant idx")
 {
-    mystd::Variant< int, bool > var;
+    static_containers::Variant< int, bool > var;
     var = int{ 2 };
     REQUIRE(typeid(var.at< 1 >()) == typeid(int));
     REQUIRE(var.at< 1 >() == 2);
@@ -24,13 +24,13 @@ TEST_CASE("set-get variant idx")
 
 TEST_CASE("get variant idx bad")
 {
-    mystd::Variant< int, bool > var;
+    static_containers::Variant< int, bool > var;
     REQUIRE_THROWS(var.template at< 2 >());
 }
 
 TEST_CASE("set-get variant type")
 {
-    mystd::Variant< int, bool > var;
+    static_containers::Variant< int, bool > var;
     var = int{ 2 };
     REQUIRE(typeid(var.template at< 1 >()) == typeid(int));
     REQUIRE(var.at_t< int >() == 2);
@@ -42,15 +42,15 @@ TEST_CASE("set-get variant type")
 
 TEST_CASE("get variant type bad")
 {
-    mystd::Variant< int, bool > var;
+    static_containers::Variant< int, bool > var;
     REQUIRE_THROWS(var.template at_t< bool >());
 }
 
 TEST_CASE("visit variant")
 {
-    mystd::Variant< int, bool > var;
+    static_containers::Variant< int, bool > var;
     var = int{ 100 };
-    REQUIRE_THROWS(mystd::visit(var,
+    REQUIRE_THROWS(static_containers::visit(var,
      [](auto & val)
      {
          if constexpr (std::is_same_v< int &, decltype(val) >)
@@ -62,9 +62,9 @@ TEST_CASE("visit variant")
 
 TEST_CASE("visit variant return")
 {
-    using VarT = mystd::Variant< int, bool >;
+    using VarT = static_containers::Variant< int, bool >;
     VarT var = int{ 100 };
-    auto new_var = mystd::visit(var,
+    auto new_var = static_containers::visit(var,
      [](auto & val) -> VarT
      {
          if constexpr (std::is_same_v< int &, decltype(val) >)
