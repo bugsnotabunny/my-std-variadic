@@ -108,13 +108,17 @@ namespace mystd
     template < typename... Args >
     class Variant
     {
+        using UnionT = detail::VariadicUnion< VariantEmpty, Args... >;
+
        public:
         constexpr Variant():
+          selected_(0),
           union_(VariantEmpty{})
         {}
 
         template < typename T >
         Variant(T val):
+          selected_(UnionT::template find_where< T >()),
           union_(VariantEmpty{})
         {
             union_.set(std::move(val));
@@ -137,10 +141,15 @@ namespace mystd
             return selected_;
         }
 
+        static constexpr size_t alternatives() noexcept
+        {
+            return sizeof...(Args) + 1;
+        }
+
         template < typename U >
         constexpr bool holds() const noexcept
         {
-            return selected_ == decltype(union_)::template find_where< U >();
+            return selected_ == UnionT::template find_where< U >();
         }
 
         template < typename U >
@@ -150,7 +159,7 @@ namespace mystd
             {
                 throw std::bad_variant_access{};
             }
-            constexpr size_t I = decltype(union_)::template find_where< U >();
+            constexpr size_t I = UnionT::template find_where< U >();
             return union_.template at< I >();
         }
 
@@ -166,7 +175,7 @@ namespace mystd
 
        private:
         size_t selected_;
-        detail::VariadicUnion< VariantEmpty, Args... > union_;
+        UnionT union_;
     };
 
     template < typename T, typename... Args >
@@ -179,5 +188,33 @@ namespace mystd
     auto & get(Variant< Args... > & var)
     {
         return var.template at< I >();
+    }
+
+    namespace detail
+    {
+        template < size_t I = 0, typename F, typename... Args >
+        auto visit_impl(Variant< Args... > & var, F & f)
+        {
+            if constexpr (I < Variant< Args... >::alternatives())
+            {
+                if (var.index() <= I)
+                {
+                    return f(get< I >(var));
+                }
+                return visit_impl< I + 1, F, Args... >(var, f);
+            }
+            else
+            {
+                throw std::bad_variant_access{};
+                // a trick to outwit return type deduction
+                return visit_impl< I - 1, F, Args... >(var, f);
+            }
+        }
+    }
+
+    template < typename F, typename... Args >
+    auto visit(Variant< Args... > & var, F f)
+    {
+        return detail::visit_impl(var, f);
     }
 }

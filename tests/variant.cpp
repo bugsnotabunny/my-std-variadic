@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
+#include <stdexcept>
 #include <type_traits>
 
 #include "variant.hpp"
@@ -43,4 +44,37 @@ TEST_CASE("get variant type bad")
 {
     mystd::Variant< int, bool > var;
     REQUIRE_THROWS(var.template at_t< bool >());
+}
+
+TEST_CASE("visit variant")
+{
+    mystd::Variant< int, bool > var;
+    var = int{ 100 };
+    REQUIRE_THROWS(mystd::visit(var,
+     [](auto & val)
+     {
+         if constexpr (std::is_same_v< int &, decltype(val) >)
+         {
+             throw std::logic_error("OK");
+         }
+     }));
+}
+
+TEST_CASE("visit variant return")
+{
+    using VarT = mystd::Variant< int, bool >;
+    VarT var = int{ 100 };
+    auto new_var = mystd::visit(var,
+     [](auto & val) -> VarT
+     {
+         if constexpr (std::is_same_v< int &, decltype(val) >)
+         {
+             return { val };
+         }
+         else
+         {
+             return { true };
+         }
+     });
+    REQUIRE(new_var.holds< int >());
 }
