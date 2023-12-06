@@ -1,6 +1,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -14,14 +15,15 @@ namespace static_containers
         class VariadicUnion
         {
            public:
-            VariadicUnion(T val):
-              node_(std::move(val))
-            {}
+            VariadicUnion():
+              node_()
+            {
+                node_.val = T{};
+            }
 
             template < size_t I >
             constexpr auto & at() noexcept
             {
-                static_assert(I < sizeof...(Args) + 1);
                 if constexpr (I == 0)
                 {
                     return node_.val;
@@ -62,6 +64,9 @@ namespace static_containers
            private:
             union Node
             {
+                ~Node()
+                {}
+
                 T val;
                 VariadicUnion< Args... > next;
             };
@@ -72,6 +77,8 @@ namespace static_containers
         class VariadicUnion< T >
         {
            public:
+            VariadicUnion() = default;
+
             VariadicUnion(T val):
               val_(std::move(val))
             {}
@@ -103,24 +110,24 @@ namespace static_containers
         };
     }
 
-    struct VariantEmpty
+    struct Emptiness
     {};
 
     template < typename... Args >
     class Variant
     {
-        using UnionT = detail::VariadicUnion< VariantEmpty, Args... >;
+        using UnionT = detail::VariadicUnion< Args... >;
 
        public:
         constexpr Variant():
           selected_(0),
-          union_(VariantEmpty{})
+          union_()
         {}
 
         template < typename T >
         Variant(T val):
           selected_(UnionT::template find_where< T >()),
-          union_(VariantEmpty{})
+          union_()
         {
             union_.set(std::move(val));
         }
@@ -129,6 +136,15 @@ namespace static_containers
         Variant(Variant &&) = default;
         Variant & operator=(const Variant &) = default;
         Variant & operator=(Variant &&) = default;
+
+        ~Variant()
+        {
+            visit(*this,
+             [](auto & elem)
+             {
+                 std::destroy_at(std::addressof(elem));
+             });
+        }
 
         template < typename T >
         Variant & operator=(T val)
@@ -144,7 +160,7 @@ namespace static_containers
 
         static constexpr size_t alternatives() noexcept
         {
-            return sizeof...(Args) + 1;
+            return sizeof...(Args);
         }
 
         static_assert(alternatives() < std::numeric_limits< unsigned char >::max());
