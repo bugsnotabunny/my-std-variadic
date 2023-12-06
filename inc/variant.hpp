@@ -216,11 +216,13 @@ namespace static_containers
         {
             if constexpr (I < Variant< Args... >::alternatives())
             {
-                if (var.index() <= I)
+                switch (var.index())
                 {
+                case I:
                     return f(get< I >(var));
+                default:
+                    return visit_impl< I + 1, F, Args... >(var, f);
                 }
-                return visit_impl< I + 1, F, Args... >(var, f);
             }
             else
             {
