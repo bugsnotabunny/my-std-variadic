@@ -17,6 +17,7 @@
 
 namespace static_containers
 {
+    /// Vector with compile-time known capacity
     template < typename T, size_t N >
     class Vector
     {

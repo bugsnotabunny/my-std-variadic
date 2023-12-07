@@ -113,6 +113,7 @@ namespace static_containers
     struct Emptiness
     {};
 
+    /// Same as std::variant for now. Maybe worse.
     template < typename... Args >
     class Variant
     {

@@ -67,6 +67,8 @@ namespace static_containers
     template < size_t BEGIN, size_t END, typename... Args >
     class TupleView;
 
+    /// Mostly same as std::tuple, but with some flavour on top: TupleView for complete or partial
+    /// iteration
     template < typename... Args >
     class Tuple
     {
