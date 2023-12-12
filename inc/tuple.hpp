@@ -12,7 +12,7 @@ namespace static_containers
         struct TupleHead
         {
             TupleHead(T v, Args... args):
-              v(std::move(v)),
+              v(std::forward< T >(v)),
               next(std::forward< Args >(args)...)
             {}
             TupleHead(const TupleHead &) = default;
@@ -43,7 +43,7 @@ namespace static_containers
         struct TupleHead< T >
         {
             explicit TupleHead(T v):
-              v(std::move(v))
+              v(std::forward< T >(v))
             {}
 
             TupleHead(const TupleHead &) = default;
@@ -105,7 +105,7 @@ namespace static_containers
              .template shrink_back< size() - END_IDX >();
         }
 
-        auto operator<=>(const Tuple & rhs) const noexcept = default;
+        constexpr auto operator<=>(const Tuple & rhs) const noexcept = default;
 
        private:
         detail::TupleHead< Args... > head_;
@@ -113,61 +113,6 @@ namespace static_containers
 
     namespace detail
     {
-        template < typename T, typename... Args >
-        struct TupleHead< T &, Args... >
-        {
-            constexpr TupleHead(T & v, Args... args):
-              v(v),
-              next(args...)
-            {}
-            TupleHead(const TupleHead &) = default;
-            TupleHead(TupleHead &&) = default;
-            TupleHead & operator=(const TupleHead &) = default;
-            TupleHead & operator=(TupleHead &&) = default;
-
-            template < size_t I >
-            constexpr auto & at() noexcept
-            {
-                if constexpr (I == 0)
-                {
-                    return v;
-                }
-                else
-                {
-                    return next.template at< I - 1 >();
-                }
-            }
-
-            auto operator<=>(const TupleHead & rhs) const noexcept = default;
-
-            T & v;
-            TupleHead< Args... > next;
-        };
-
-        template < typename T >
-        struct TupleHead< T & >
-        {
-            constexpr explicit TupleHead(T & v):
-              v(v)
-            {}
-
-            TupleHead(const TupleHead &) = default;
-            TupleHead(TupleHead &&) = default;
-            TupleHead & operator=(const TupleHead &) = default;
-            TupleHead & operator=(TupleHead &&) = default;
-
-            template < size_t I >
-            constexpr auto & at()
-            {
-                static_assert(I == 0, "Requested tuple index is out of bounds");
-                return v;
-            }
-
-            auto operator<=>(const TupleHead & rhs) const noexcept = default;
-
-            T & v;
-        };
-
         template < size_t I = 0, typename... Args >
         constexpr void assign_ref_tuple_impl(Tuple< Args &... > & lhs, Tuple< Args... > rhs)
         {
@@ -281,10 +226,7 @@ namespace static_containers
        private:
         Tuple< Args... > & tuple_;
     };
-}
 
-namespace static_containers
-{
     template < size_t I, size_t BEGIN, size_t END, typename... Args >
     auto & get(TupleView< BEGIN, END, Args... > & rhs)
     {
