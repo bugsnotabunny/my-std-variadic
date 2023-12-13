@@ -172,18 +172,6 @@ namespace static_containers
         detail::TupleHead< Args &... > head_;
     };
 
-    template < size_t I, typename... Args >
-    constexpr auto & get(Tuple< Args... > & rhs)
-    {
-        return rhs.template at< I >();
-    }
-
-    template < typename... Args >
-    constexpr Tuple< Args &... > tie(Args &... args) noexcept
-    {
-        return { args... };
-    }
-
     template < size_t BEGIN, size_t END, typename... Args >
     class TupleView
     {
@@ -227,10 +215,42 @@ namespace static_containers
         Tuple< Args... > & tuple_;
     };
 
-    template < size_t I, size_t BEGIN, size_t END, typename... Args >
-    auto & get(TupleView< BEGIN, END, Args... > & rhs)
+    template < typename T >
+    concept TupleLike = requires(T x) {
+        get< 0 >(x);
+        get< 0 >(std::move(x));
+        get< 0 >(std::forward< T >(x));
+        T::size();
+    };
+
+    template < size_t I, typename... Args >
+    constexpr auto & get(Tuple< Args... > & rhs)
     {
         return rhs.template at< I >();
+    }
+
+    template < size_t I, typename... Args >
+    constexpr auto && get(Tuple< Args... > && rhs)
+    {
+        return std::move(rhs.template at< I >());
+    }
+
+    template < typename... Args >
+    constexpr Tuple< Args &... > tie(Args &... args) noexcept
+    {
+        return { args... };
+    }
+
+    template < size_t I, size_t BEGIN, size_t END, typename... Args >
+    constexpr auto & get(TupleView< BEGIN, END, Args... > & rhs)
+    {
+        return rhs.template at< I >();
+    }
+
+    template < size_t I, size_t BEGIN, size_t END, typename... Args >
+    constexpr auto && get(TupleView< BEGIN, END, Args... > && rhs)
+    {
+        return std::move(rhs.template at< I >());
     }
 
     template < size_t I = 0, typename F, size_t BEGIN, size_t END, typename... Args >
@@ -241,6 +261,43 @@ namespace static_containers
             f(get< I >(view));
             for_each< I + 1, F, BEGIN, END, Args... >(view, f);
         }
+    }
+
+    namespace detail
+    {
+        template < typename... Args >
+        struct Concater
+        {
+            template < size_t I = 0, TupleLike Tpl, TupleLike... Tpls >
+            static constexpr auto concat(Tpl tpl, Tpls... tpls, Args... args)
+            {
+                if constexpr (I < Tpl::size())
+                {
+                    auto next_arg = get< I >(std::forward< Tpl >(tpl));
+                    using NextArgType = decltype(next_arg);
+                    return Concater< Args..., NextArgType >::template concat< I + 1, Tpl, Tpls... >(
+                     std::forward< Tpl >(tpl),
+                     std::forward< Tpls >(tpls)...,
+                     std::forward< Args >(args)...,
+                     std::forward< NextArgType >(next_arg));
+                }
+                else if constexpr (sizeof...(Tpls) > 0)
+                {
+                    return Concater< Args... >::concat< 0, Tpls... >(std::forward< Tpls >(tpls)...,
+                     std::forward< Args >(args)...);
+                }
+                else
+                {
+                    return Tuple{ std::forward< Args >(args)... };
+                }
+            }
+        };
+    }
+
+    template < TupleLike... Tpls >
+    constexpr auto concat(Tpls... tpls)
+    {
+        return detail::Concater<>::concat< 0, Tpls... >(std::forward< Tpls >(tpls)...);
     }
 }
 
