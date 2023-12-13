@@ -1,5 +1,6 @@
 
 #include <cstddef>
+#include <cstring>
 #include <limits>
 #include <memory>
 #include <stdexcept>
@@ -17,9 +18,7 @@ namespace static_containers
            public:
             VariadicUnion():
               node_()
-            {
-                node_.val = T{};
-            }
+            {}
 
             template < size_t I >
             constexpr auto & at() noexcept
@@ -64,6 +63,11 @@ namespace static_containers
            private:
             union Node
             {
+                Node()
+                {
+                    std::memset(this, 0, sizeof(Node));
+                }
+
                 ~Node()
                 {}
 
@@ -78,10 +82,6 @@ namespace static_containers
         {
            public:
             VariadicUnion() = default;
-
-            VariadicUnion(T val):
-              val_(std::move(val))
-            {}
 
             template < size_t I >
             constexpr auto & at() noexcept
@@ -113,6 +113,15 @@ namespace static_containers
     struct Emptiness
     {};
 
+    namespace detail
+    {
+        template < typename T, typename... Args >
+        T construct_first_defaulted()
+        {
+            return T{};
+        }
+    }
+
     /// Same as std::variant for now. Maybe worse.
     template < typename... Args >
     class Variant
@@ -123,7 +132,9 @@ namespace static_containers
         constexpr Variant():
           selected_(0),
           union_()
-        {}
+        {
+            union_.set(detail::construct_first_defaulted< Args... >());
+        }
 
         template < typename T >
         Variant(T val):

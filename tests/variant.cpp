@@ -1,21 +1,26 @@
-#include <cassert>
-#include <catch2/catch_test_macros.hpp>
+#include "variant.hpp"
 
+#include <cassert>
+#include <cstddef>
 #include <functional>
 #include <stdexcept>
 #include <type_traits>
 
-#include "variant.hpp"
+#include <catch2/catch_test_macros.hpp>
+
+#include "drop_logger.hpp"
+
+namespace stct = static_containers;
 
 TEST_CASE("default variant")
 {
-    static_containers::Variant< int, bool > var;
+    stct::Variant< int, bool > var;
     REQUIRE(var.at< 0 >() == 0);
 }
 
 TEST_CASE("set-get variant idx")
 {
-    static_containers::Variant< int, bool > var;
+    stct::Variant< int, bool > var;
     var = int{ 2 };
     REQUIRE(typeid(var.at< 0 >()) == typeid(int));
     REQUIRE(var.at< 0 >() == 2);
@@ -26,13 +31,13 @@ TEST_CASE("set-get variant idx")
 
 TEST_CASE("get variant idx bad")
 {
-    static_containers::Variant< int, bool > var;
+    stct::Variant< int, bool > var;
     REQUIRE_THROWS(var.at< 1 >());
 }
 
 TEST_CASE("set-get variant type")
 {
-    static_containers::Variant< int, bool > var;
+    stct::Variant< int, bool > var;
     var = int{ 2 };
     REQUIRE(typeid(var.template at< 0 >()) == typeid(int));
     REQUIRE(var.at_t< int >() == 2);
@@ -44,15 +49,15 @@ TEST_CASE("set-get variant type")
 
 TEST_CASE("get variant type bad")
 {
-    static_containers::Variant< int, bool > var;
+    stct::Variant< int, bool > var;
     REQUIRE_THROWS(var.template at_t< bool >());
 }
 
 TEST_CASE("visit variant")
 {
-    static_containers::Variant< int, bool > var;
+    stct::Variant< int, bool > var;
     var = int{ 100 };
-    REQUIRE_THROWS(static_containers::visit(var,
+    REQUIRE_THROWS(stct::visit(var,
      [](auto & val)
      {
          if constexpr (std::is_same_v< int &, decltype(val) >)
@@ -64,9 +69,9 @@ TEST_CASE("visit variant")
 
 TEST_CASE("visit variant return")
 {
-    using VarT = static_containers::Variant< int, bool >;
+    using VarT = stct::Variant< int, bool >;
     VarT var = int{ 100 };
-    auto new_var = static_containers::visit(var,
+    auto new_var = stct::visit(var,
      [](auto & val) -> VarT
      {
          if constexpr (std::is_same_v< int &, decltype(val) >)
@@ -83,18 +88,10 @@ TEST_CASE("visit variant return")
 
 TEST_CASE("variant destructs")
 {
-    // static bool was_destructed = false;
-
-    // struct A
-    // {
-    //     ~A()
-    //     {
-    //         was_destructed = true;
-    //     }
-    // };
-    // {
-    //     static_containers::Variant< A, bool > to_destroy;
-    //     to_destroy = A{};
-    // }
-    // assert(was_destructed);
+    using stct::testing::DropLogger;
+    size_t destructed = 0;
+    {
+        stct::Variant< DropLogger, bool > to_destroy{ DropLogger{ destructed } };
+    }
+    assert(destructed == 1);
 }

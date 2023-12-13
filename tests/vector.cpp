@@ -1,59 +1,21 @@
+#include "vector.hpp"
+
 #include <algorithm>
 #include <cassert>
-#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <functional>
 #include <ranges>
 #include <vector>
 
-#include "vector.hpp"
+#include <catch2/catch_test_macros.hpp>
+
+#include "drop_logger.hpp"
 
 namespace stct = static_containers;
 
 namespace
 {
     const stct::Vector< int, 3 > TEST_DEFAULT{ 0, 1, 2 };
-
-    class DropLogger
-    {
-       public:
-        DropLogger(size_t & cnt):
-          cnt_(cnt)
-        {}
-
-        DropLogger(const DropLogger &) = default;
-
-        DropLogger(DropLogger && rhs):
-          cnt_(rhs.cnt_),
-          moved_(rhs.moved_),
-          destroyed_(rhs.destroyed_)
-        {
-            rhs.moved_ = true;
-        }
-
-        DropLogger & operator=(const DropLogger &) = default;
-
-        DropLogger & operator=(DropLogger && rhs)
-        {
-            std::swap(*this, rhs);
-            return *this;
-        }
-
-        ~DropLogger()
-        {
-            assert(!destroyed_);
-            destroyed_ = true;
-            if (!moved_)
-            {
-                ++cnt_;
-            }
-        }
-
-       private:
-        std::reference_wrapper< size_t > cnt_;
-        bool moved_ = false;
-        bool destroyed_ = false;
-    };
 }
 
 TEST_CASE("empty vector")
@@ -93,6 +55,7 @@ TEST_CASE("initialize vector from init list")
 
 TEST_CASE("vector destruction")
 {
+    using stct::testing::DropLogger;
     static size_t destructed = 0;
     auto logger = DropLogger{ destructed };
     {
@@ -160,6 +123,7 @@ TEST_CASE("vector rev iteration")
 
 TEST_CASE("vector pop_back")
 {
+    using stct::testing::DropLogger;
     static size_t destructed = 0;
     auto logger = DropLogger{ destructed };
     stct::Vector< DropLogger, 3 > a(3, logger);
@@ -171,6 +135,7 @@ TEST_CASE("vector pop_back")
 
 TEST_CASE("vector clear")
 {
+    using stct::testing::DropLogger;
     static size_t destructed = 0;
     auto logger = DropLogger{ destructed };
     stct::Vector< DropLogger, 3 > a(3, logger);
@@ -183,6 +148,7 @@ TEST_CASE("vector resize")
 {
     SECTION("shrink")
     {
+        using stct::testing::DropLogger;
         static size_t destructed = 0;
         auto logger = DropLogger{ destructed };
         stct::Vector< DropLogger, 15 > a(13, logger);
