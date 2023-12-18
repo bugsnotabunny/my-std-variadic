@@ -1,5 +1,5 @@
-#ifndef STATIC_VECTOR_HPP
-#define STATIC_VECTOR_HPP
+#ifndef STCT_VECTOR_HPP
+#define STCT_VECTOR_HPP
 
 #include <algorithm>
 #include <bits/iterator_concepts.h>
@@ -64,7 +64,7 @@ namespace static_containers
         }
 
         constexpr Vector(const Vector & rhs):
-          size_(0)
+          Vector()
         {
             for (const auto & item: rhs)
             {
