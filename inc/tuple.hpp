@@ -1,5 +1,5 @@
-#ifndef TUPLE_HPP
-#define TUPLE_HPP
+#ifndef STCT_TUPLE_HPP
+#define STCT_TUPLE_HPP
 
 #include <cstddef>
 #include <utility>
@@ -266,38 +266,51 @@ namespace static_containers
     namespace detail
     {
         template < typename... Args >
-        struct Concater
+        struct Unwrapper
         {
-            template < size_t I = 0, TupleLike Tpl, TupleLike... Tpls >
-            static constexpr auto concat(Tpl tpl, Tpls... tpls, Args... args)
+            template < size_t I = 0, typename F, TupleLike Tpl, TupleLike... Tpls >
+            static constexpr auto unwrap_one(F f, Tpl tpl, Tpls... tpls, Args... args)
             {
                 if constexpr (I < Tpl::size())
                 {
                     auto next_arg = get< I >(std::forward< Tpl >(tpl));
                     using NextArgType = decltype(next_arg);
-                    return Concater< Args..., NextArgType >::template concat< I + 1, Tpl, Tpls... >(
-                     std::forward< Tpl >(tpl),
-                     std::forward< Tpls >(tpls)...,
-                     std::forward< Args >(args)...,
-                     std::forward< NextArgType >(next_arg));
+                    return Unwrapper< Args..., NextArgType >::
+                     template unwrap_one< I + 1, F, Tpl, Tpls... >(std::forward< F >(f),
+                      std::forward< Tpl >(tpl),
+                      std::forward< Tpls >(tpls)...,
+                      std::forward< Args >(args)...,
+                      std::forward< NextArgType >(next_arg));
                 }
                 else if constexpr (sizeof...(Tpls) > 0)
                 {
-                    return Concater< Args... >::concat< 0, Tpls... >(std::forward< Tpls >(tpls)...,
+                    return Unwrapper< Args... >::unwrap_one< 0, F, Tpls... >(std::forward< F >(f),
+                     std::forward< Tpls >(tpls)...,
                      std::forward< Args >(args)...);
                 }
                 else
                 {
-                    return Tuple{ std::forward< Args >(args)... };
+                    return f(std::forward< Args >(args)...);
                 }
             }
         };
     }
 
+    template < typename F, TupleLike... Tpls >
+    constexpr auto unwrap_then_do(F f, Tpls... tpls)
+    {
+        return detail::Unwrapper<>::unwrap_one(std::forward< F >(f), std::forward< Tpls >(tpls)...);
+    }
+
     template < TupleLike... Tpls >
     constexpr auto concat(Tpls... tpls)
     {
-        return detail::Concater<>::concat< 0, Tpls... >(std::forward< Tpls >(tpls)...);
+        return unwrap_then_do(
+         [](auto &&... args)
+         {
+             return Tuple{ std::forward< decltype(args) >(args)... };
+         },
+         std::forward< Tpls >(tpls)...);
     }
 }
 
