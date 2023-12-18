@@ -1,3 +1,5 @@
+#ifndef STCT_VARIANT_HPP
+#define STCT_VARIANT_HPP
 
 #include <cstddef>
 #include <cstring>
@@ -251,3 +253,5 @@ namespace static_containers
         return detail::visit_impl(var, f);
     }
 }
+
+#endif
