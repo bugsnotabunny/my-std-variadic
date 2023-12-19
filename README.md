@@ -1,1 +1,1 @@
-My implementations of standard library classes with variadic template parameters lists. Done for study purposes only, but if this library is somehow usefull for you - feel free to use or copypaste.
+My implementations of standard library classes with variadic template parameters lists (and a bit more). Done for study purposes only, but if this library is somehow usefull for you - feel free to use or even copypaste.
