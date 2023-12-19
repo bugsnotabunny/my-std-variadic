@@ -15,7 +15,7 @@ namespace
 {
     struct Set0
     {
-        void operator()() noexcept
+        constexpr void operator()() const noexcept
         {
             to_set = 0;
         }
