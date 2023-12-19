@@ -49,16 +49,6 @@ namespace static_containers
             return visit_at_impl(idx(key), std::forward< F >(f));
         }
 
-        template < typename... Args >
-        constexpr auto call_at(const Key & key, Args &&... args)
-        {
-            return visit_at(key,
-             [&](auto & f)
-             {
-                 return f(std::forward< Args >(args)...);
-             });
-        }
-
         constexpr size_t idx(const Key & key)
         {
             auto it = std::ranges::upper_bound(keys_, key);
@@ -89,6 +79,12 @@ namespace static_containers
                     return visit_at_impl< I + 1, F >(idx, std::forward< F >(f));
                 }
             }
+            else
+            {
+                // a trick to outwit return type deduction
+                assert(false);
+                return visit_at_impl< I - 1, F >(idx, std::forward< F >(f));
+            }
         }
 
         std::array< Key, sizeof...(Values) > keys_;
@@ -112,32 +108,39 @@ namespace static_containers
         Tuple< Values... > values{ std::forward< Values >(get< 1 >(keyvals))... };
         return Map{ std::move(keys), std::move(values), std::forward< Comparator >(cmp) };
     }
+}
 
-    namespace detail
+namespace static_containers::visitors
+{
+    template < typename Key, typename... Args >
+    constexpr auto call_at(auto & map, const Key & key, Args &&... args)
     {
-        template < typename First, std::same_as< First > Second, typename... Args >
-        struct common_type
-        {
-            using type = common_type< Second, Args... >;
-        };
-
-        template < typename First, std::same_as< First > Second >
-        struct common_type< First, Second >
-        {
-            using type = Second;
-        };
-
-        template < typename First, std::same_as< First > Second, typename... Args >
-        using common_type_t = typename common_type< First, Second, Args... >::type;
+        return map.visit_at(key,
+         [&](auto & f)
+         {
+             return f(std::forward< Args >(args)...);
+         });
     }
 
-    template < typename Key, typename Comparator, typename... Values >
-    Map(std::array< Key, sizeof...(Values) > keys, Tuple< Values... > values_, Comparator cmp)
-     -> Map< Key, Comparator, Values... >;
+    template < typename Key >
+    constexpr auto incr_at(auto & map, const Key & key)
+    {
+        return map.visit_at(key,
+         [&](auto & i)
+         {
+             ++i;
+         });
+    }
 
-    template < typename Key, typename Comparator, typename... Values >
-    Map(Tuple< Key, Values >... keyvals, Comparator cmp = Comparator{})
-     -> Map< Key, Comparator, Values... >;
+    template < typename Key >
+    constexpr auto decr_at(auto & map, const Key & key)
+    {
+        return map.visit_at(key,
+         [&](auto & i)
+         {
+             --i;
+         });
+    }
 }
 
 #endif
