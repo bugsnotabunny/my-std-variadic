@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "tuple.hpp"
+#include "concepts.hpp"
 
 namespace static_containers
 {
@@ -57,14 +58,6 @@ namespace static_containers
 
        private:
         Tuple< Args... > & tuple_;
-    };
-
-    template < typename T >
-    concept TupleLike = requires(T x) {
-        get< 0 >(x);
-        get< 0 >(std::move(x));
-        get< 0 >(std::forward< T >(x));
-        T::size();
     };
 
     template < size_t I, size_t BEGIN, size_t END, typename... Args >
