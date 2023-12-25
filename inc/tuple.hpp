@@ -227,6 +227,12 @@ namespace static_containers
     {
         return { args... };
     }
+
+    template < typename... Args >
+    constexpr auto make_tuple(Args... args)
+    {
+        return Tuple{ std::forward< Args >(args)... };
+    }
 }
 
 #endif
