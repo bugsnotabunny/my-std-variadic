@@ -86,6 +86,8 @@ namespace static_containers
     class Tuple
     {
        public:
+        using args_as_pack = pack< Args... >;
+
         Tuple(Args... args):
           head_(std::forward< Args >(args)...){};
 
@@ -93,8 +95,6 @@ namespace static_containers
         Tuple(Tuple &&) = default;
         Tuple & operator=(const Tuple &) = default;
         Tuple & operator=(Tuple &&) = default;
-
-        using args_pack = pack< Args... >;
 
         template < size_t I >
         constexpr auto & at()

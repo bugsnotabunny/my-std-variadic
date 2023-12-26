@@ -90,7 +90,7 @@ TEST_CASE("fwd sorted")
 {
     auto args_tup = ARGS;
 
-    using sizeof_less = static_containers::comparators::size_of::less;
+    using sizeof_less = stct::comparators::size_of::less;
     auto res = stct::unwrap_then_do(
      [](auto &&... args)
      {
@@ -99,5 +99,5 @@ TEST_CASE("fwd sorted")
      },
      std::move(args_tup));
 
-    REQUIRE(decltype(res)::args_pack::is_sorted< sizeof_less >());
+    REQUIRE(decltype(res)::args_as_pack::is_sorted< sizeof_less >());
 }
