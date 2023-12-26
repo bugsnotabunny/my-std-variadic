@@ -5,15 +5,6 @@
 
 namespace static_containers
 {
-    template < typename FnPtr >
-    constexpr auto lambdize(FnPtr fn)
-    {
-        return [=]< typename... Args >(Args &&... args)
-        {
-            (*fn)(std::forward< Args >(args)...);
-        };
-    }
-
     namespace detail
     {
         template < size_t FROM, size_t UNTIL, size_t I = 0, typename... Ordered >
@@ -115,8 +106,8 @@ namespace static_containers
                 auto j = fwd_ith< J >(make_tuple, std::forward< Args >(args)...);
                 auto ending =
                  fwd_sliced< J + 1, sizeof...(Args) >(make_tuple, std::forward< Args >(args)...);
-                auto switched_arglist = concat(begining, j, middle, i, ending);
-                return unwrap_then_do(std::forward< F >(f), std::move(switched_arglist));
+                auto swapped_arglist = concat(begining, j, middle, i, ending);
+                return unwrap_then_do(std::forward< F >(f), std::move(swapped_arglist));
             }
         };
     }
