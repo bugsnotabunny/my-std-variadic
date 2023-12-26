@@ -2,6 +2,7 @@
 #include <utility>
 
 #include "tuple.hpp"
+#include "comparators.hpp"
 
 namespace static_containers
 {
@@ -118,6 +119,75 @@ namespace static_containers
     constexpr auto fwd_swapped(F && f, Args &&... args)
     {
         return detail::FwdSwappedImpl< I, J, Args... >::fwd(std::forward< F >(f),
+         std::forward< Args >(args)...);
+    }
+
+    namespace detail
+    {
+        template < size_t N, size_t I, typename TypeComparator, typename... Passed >
+        struct FwdSortedImpl
+        {
+            template < typename F,
+             typename FirstUnpassed,
+             typename SecondUnpassed,
+             typename... Unpassed >
+            constexpr static auto fwd(F && f,
+             Passed &&... passed,
+             FirstUnpassed && to_pass1,
+             SecondUnpassed && to_pass2,
+             Unpassed &&... unpassed)
+            {
+                if constexpr (!TypeComparator::template value< decltype(to_pass1),
+                               decltype(to_pass2) >())
+                {
+                    return FwdSortedImpl< N, I, TypeComparator, Passed..., SecondUnpassed >::fwd(
+                     std::forward< F >(f),
+                     std::forward< Passed >(passed)...,
+                     std::forward< SecondUnpassed >(to_pass2),
+                     std::forward< FirstUnpassed >(to_pass1),
+                     std::forward< Unpassed >(unpassed)...);
+                }
+                else
+                {
+                    return FwdSortedImpl< N, I, TypeComparator, Passed..., FirstUnpassed >::fwd(
+                     std::forward< F >(f),
+                     std::forward< Passed >(passed)...,
+                     std::forward< FirstUnpassed >(to_pass1),
+                     std::forward< SecondUnpassed >(to_pass2),
+                     std::forward< Unpassed >(unpassed)...);
+                }
+            }
+
+            template < typename F, typename FirstUnpassed >
+            constexpr static auto fwd(F && f, Passed &&... passed, FirstUnpassed && to_pass)
+            {
+                return FwdSortedImpl< N, I, TypeComparator, Passed..., FirstUnpassed >::fwd(
+                 std::forward< F >(f),
+                 std::forward< Passed >(passed)...,
+                 std::forward< FirstUnpassed >(to_pass));
+            }
+
+            template < typename F >
+            constexpr static auto fwd(F && f, Passed &&... passed)
+            {
+                if constexpr (I == N)
+                {
+                    return f(std::forward< Passed >(passed)...);
+                }
+                else
+                {
+                    return FwdSortedImpl< N, I + 1, TypeComparator >::fwd(std::forward< F >(f),
+                     std::forward< Passed >(passed)...);
+                }
+            }
+        };
+    }
+
+    template < typename TypeComparator, typename F, typename... Args >
+    constexpr auto fwd_sorted(F && f, Args &&... args)
+    {
+        return detail::FwdSortedImpl< sizeof...(Args), 0, TypeComparator >::fwd(
+         std::forward< F >(f),
          std::forward< Args >(args)...);
     }
 }

@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <utility>
 
+#include "traits.hpp"
+
 namespace static_containers
 {
     namespace detail
@@ -91,6 +93,8 @@ namespace static_containers
         Tuple(Tuple &&) = default;
         Tuple & operator=(const Tuple &) = default;
         Tuple & operator=(Tuple &&) = default;
+
+        using args_pack = pack< Args... >;
 
         template < size_t I >
         constexpr auto & at()

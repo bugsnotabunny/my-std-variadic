@@ -1,18 +1,17 @@
 #include "fwd.hpp"
+#include "comparators.hpp"
 #include "tuple.hpp"
 #include "tuple_utils.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include <cmath>
 #include <cstddef>
-#include <functional>
 #include <utility>
 
 namespace stct = static_containers;
 
 namespace
 {
-    const auto ARGS = stct::Tuple{ int(10), unsigned(20), float(1.22), long(-1234), size_t(100) };
+    const auto ARGS = stct::Tuple{ nullptr, long(-1234), int(10), char('b'), float(1.22) };
 }
 
 namespace
@@ -85,4 +84,20 @@ TEST_CASE("fwd swap")
                     ARGS.at< 1 >(),
                     ARGS.at< 4 >(),
                    });
+}
+
+TEST_CASE("fwd sorted")
+{
+    auto args_tup = ARGS;
+
+    using sizeof_less = static_containers::comparators::size_of::less;
+    auto res = stct::unwrap_then_do(
+     [](auto &&... args)
+     {
+         return stct::fwd_sorted< sizeof_less >(stct::make_tuple,
+          std::forward< decltype(args) >(args)...);
+     },
+     std::move(args_tup));
+
+    REQUIRE(decltype(res)::args_pack::is_sorted< sizeof_less >());
 }
