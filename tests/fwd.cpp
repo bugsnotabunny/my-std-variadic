@@ -88,16 +88,15 @@ TEST_CASE("fwd swap")
 
 TEST_CASE("fwd sorted")
 {
-    auto args_tup = ARGS;
+    auto args_tuple = ARGS;
 
     using sizeof_less = stct::comparators::size_of::less;
     auto res = stct::unwrap_then_do(
      [](auto &&... args)
      {
-         return stct::fwd_sorted< sizeof_less >(stct::make_tuple,
-          std::forward< decltype(args) >(args)...);
+         return stct::fwd_sorted< sizeof_less >(stct::make_tuple, std::move(args)...);
      },
-     std::move(args_tup));
+     std::move(args_tuple));
 
     REQUIRE(decltype(res)::args_as_pack::is_sorted< sizeof_less >());
 }
