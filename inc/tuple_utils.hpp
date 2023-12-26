@@ -93,10 +93,10 @@ namespace static_containers
         template < typename... Args >
         struct Unwrapper
         {
-            template < size_t I = 0, typename F, TupleLike Tpl, TupleLike... Tpls >
-            static constexpr auto unwrap(F f, Tpl tpl, Tpls... tpls, Args... args)
+            template < size_t I = 0, typename F, typename Tpl, typename... Tpls >
+            static constexpr auto unwrap(F && f, Tpl && tpl, Tpls &&... tpls, Args &&... args)
             {
-                if constexpr (I < Tpl::size())
+                if constexpr (I < std::remove_reference_t< Tpl >::size())
                 {
                     auto next_arg = get< I >(std::forward< Tpl >(tpl));
                     using NextArgType = decltype(next_arg);
@@ -121,14 +121,14 @@ namespace static_containers
         };
     }
 
-    template < typename F, TupleLike... Tpls >
-    constexpr auto unwrap_then_do(F f, Tpls... tpls)
+    template < typename F, typename... Tpls >
+    constexpr auto unwrap_then_do(F && f, Tpls &&... tpls)
     {
         return detail::Unwrapper<>::unwrap(std::forward< F >(f), std::forward< Tpls >(tpls)...);
     }
 
-    template < TupleLike... Tpls >
-    constexpr auto concat(Tpls... tpls)
+    template < typename... Tpls >
+    constexpr auto concat(Tpls &&... tpls)
     {
         return unwrap_then_do(
          [](auto &&... args)

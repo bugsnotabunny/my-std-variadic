@@ -8,8 +8,11 @@ namespace static_containers
 {
     namespace detail
     {
+        template < typename... Args >
+        struct TupleHead;
+
         template < typename T, typename... Args >
-        struct TupleHead
+        struct TupleHead< T, Args... >
         {
             TupleHead(T v, Args... args):
               v(std::forward< T >(v)),
@@ -52,12 +55,10 @@ namespace static_containers
             TupleHead< Args... > next;
         };
 
-        template < typename T >
-        struct TupleHead< T >
+        template <>
+        struct TupleHead<>
         {
-            explicit TupleHead(T v):
-              v(std::forward< T >(v))
-            {}
+            TupleHead() = default;
 
             TupleHead(const TupleHead &) = default;
             TupleHead(TupleHead &&) = default;
@@ -65,22 +66,12 @@ namespace static_containers
             TupleHead & operator=(TupleHead &&) = default;
 
             template < size_t I >
-            constexpr auto & at() noexcept
-            {
-                static_assert(I == 0, "Requested tuple index is out of bounds");
-                return v;
-            }
-
-            template < size_t I >
             constexpr const auto & at() const noexcept
             {
-                static_assert(I == 0, "Requested tuple index is out of bounds");
-                return v;
+                static_assert(I == -1, "Requested tuple index is out of bounds");
             }
 
             auto operator<=>(const TupleHead & rhs) const noexcept = default;
-
-            T v;
         };
     }
 
@@ -228,11 +219,10 @@ namespace static_containers
         return { args... };
     }
 
-    template < typename... Args >
-    constexpr auto make_tuple(Args... args)
+    constexpr auto make_tuple = []< typename... Args >(Args &&... args)
     {
         return Tuple{ std::forward< Args >(args)... };
-    }
+    };
 }
 
 #endif
