@@ -49,6 +49,8 @@ namespace static_containers
     template < size_t FROM, size_t UNTIL, typename F, typename... Args >
     constexpr auto fwd_sliced(F && f, Args &&... args)
     {
+        static_assert(FROM <= UNTIL,
+         "UNTIL idx should be greater then FROM idx or equal to FROM idx");
         return detail::FwdSlicedImpl< FROM, UNTIL >::fwd(std::forward< F >(f),
          std::forward< Args >(args)...);
     }
